@@ -30,3 +30,6 @@ CREATE TABLE otp(
 );
 
 SELECT * FROM app_users WHERE email = 'panha789@gmail.com';
+
+
+SELECT * FROM otp WHERE otp ='754425';

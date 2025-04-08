@@ -37,9 +37,7 @@ public interface AppUserRepository {
 
 
     @Select("""
-       UPDATE otp SET otp= #{sendOtp} expiration = #{expiation} WHERE  user_id = #{userId}
+       UPDATE otp SET otp= #{sendOtp}, expiration = #{expiration} WHERE  user_id = #{userId}
     """)
-    void resend(String sendOtp , LocalDateTime expirationDate , Long userId);
-
-
+    void resend(String sendOtp , LocalDateTime expiration , Long userId);
 }

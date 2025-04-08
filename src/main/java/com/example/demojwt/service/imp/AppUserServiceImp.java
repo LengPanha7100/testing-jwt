@@ -61,10 +61,10 @@ public class AppUserServiceImp implements AppUserService {
         otpStore.put(appUserRequest.getEmail() , sendOtp);
         appUserRequest.setPassword(passwordEncoder.encode(appUserRequest.getPassword()));
         AppUser appUser = appUserRepository.register(appUserRequest);
-        LocalDateTime expirationDate = LocalDateTime.now().plusDays(2);
+        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(2);
         OtpRequest otpRequest = new OtpRequest(sendOtp , expirationDate , appUser.getUserId() );
         otpRepository.insetOtp(otpRequest);
-        verify(sendOtp , appUserRequest.getEmail());
+//        verify(sendOtp , appUserRequest.getEmail());
         return modelMapper.map(appUser, AppUserResponse.class);
     }
 
@@ -74,18 +74,21 @@ public class AppUserServiceImp implements AppUserService {
     }
 
     @Override
-    public void verify(String email , String otp) {
+    public void verify(String email, String otp) {
         Otp otpObject = otpRepository.getOtpValue(otp);
-        if(!otpObject.getExpiration().isAfter(LocalDateTime.now())) {
-            throw new BadRequestException("OTP expired");
-        }
-        System.out.println(!otpObject.getExpiration().isAfter(LocalDateTime.now()));
 
-        if(otpObject == null) {
+        if (otpObject == null) {
             throw new BadRequestException("Invalid otp");
         }
+
+        if (!otpObject.getExpiration().isAfter(LocalDateTime.now())) {
+            throw new BadRequestException("OTP expired");
+        }
+
+        System.out.println(otpObject);
         appUserRepository.verifyCode(email , otp);
     }
+
 
 
     @Override
@@ -108,8 +111,8 @@ public class AppUserServiceImp implements AppUserService {
             mimeMessageHelper.setText(process, true);
             mimeMessageHelper.setTo(email);
             javaMailSender.send(mimeMessage);
-            LocalDateTime expirationDate = LocalDateTime.now().plusDays(2);
-            OtpRequest otpRequest = new OtpRequest(sendOtp , expirationDate , appUser.getUserId() );
+            LocalDateTime expiration = LocalDateTime.now().plusMinutes(2);
+            OtpRequest otpRequest = new OtpRequest(sendOtp , expiration , appUser.getUserId() );
             otpRepository.insetOtp(otpRequest);
         }catch (MessagingException e) {
             System.out.println(e.getMessage());
@@ -120,9 +123,9 @@ public class AppUserServiceImp implements AppUserService {
     public void resend(String email) {
         AppUser appUser = appUserRepository.findByEmail(email);
         String sendOtp  = generateOtp();
-        LocalDateTime expirationDate = LocalDateTime.now().plusDays(2);
+        LocalDateTime expirationDate = LocalDateTime.now().plusMinutes(2);
         appUserRepository.resend(sendOtp, expirationDate , appUser.getUserId());
-        verify(sendOtp , email);
+//        verify(sendOtp , email);
     }
 
     private String generateOtp() {
